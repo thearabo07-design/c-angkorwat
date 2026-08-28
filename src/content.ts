@@ -1,3 +1,5 @@
+import { z } from 'zod'
+
 export type Story = { number: string; title: string; text: string }
 export type GalleryItem = { title: string; detail: string; imageUrl: string; className: string }
 
@@ -27,3 +29,18 @@ export const defaultContent: SiteContent = {
   },
   contact: { email: '', phone: '', socialLabel: '', socialUrl: '' },
 }
+
+const text = z.string().trim().min(1).max(5000)
+const optionalUrl = z.union([z.literal(''), z.url().refine((value) => value.startsWith('https://'), 'Use an HTTPS URL')])
+
+export const siteContentSchema: z.ZodType<SiteContent> = z.object({
+  stories: z.array(z.object({ number: z.string().max(10), title: text, text })).min(1).max(50),
+  gallery: z.array(z.object({ title: text, detail: text, imageUrl: optionalUrl, className: z.string().max(80) })).max(100),
+  visit: z.object({ hours: text, bestTime: text, guidance: text }),
+  contact: z.object({
+    email: z.union([z.literal(''), z.email()]),
+    phone: z.string().max(50),
+    socialLabel: z.string().max(100),
+    socialUrl: optionalUrl,
+  }),
+})

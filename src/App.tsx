@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import heroImage from './assets/hero.png'
 import sunriseImage from './assets/angkor-sunrise-optimized.jpg'
-import AdminDashboard from './admin/AdminDashboard'
 import { defaultContent, type GalleryItem } from './content'
 import { loadSiteContent } from './lib/supabase'
 import './App.css'
@@ -9,17 +8,13 @@ import './App.css'
 function TempleMark() { return <span className="temple-mark" aria-hidden="true">☼</span> }
 
 function App() {
-  const [isAdmin, setIsAdmin] = useState(window.location.hash === '#admin')
   const [content, setContent] = useState(defaultContent)
   const [menuOpen, setMenuOpen] = useState(false)
   const [selectedImage, setSelectedImage] = useState<(GalleryItem & { image: string }) | null>(null)
   const [showBackToTop, setShowBackToTop] = useState(false)
 
   useEffect(() => {
-    const route = () => setIsAdmin(window.location.hash === '#admin')
-    window.addEventListener('hashchange', route)
     loadSiteContent().then((saved) => saved && setContent(saved)).catch(() => undefined)
-    return () => window.removeEventListener('hashchange', route)
   }, [])
 
   useEffect(() => {
@@ -29,8 +24,6 @@ function App() {
   }, [])
 
   const closeMenu = () => setMenuOpen(false)
-
-  if (isAdmin) return <AdminDashboard />
 
   const gallery = content.gallery.map((item, index) => ({
     ...item,
@@ -57,7 +50,7 @@ function App() {
     <section className="guide section reveal" id="guide"><div className="guide-heading"><p className="eyebrow">A gentle one-day guide</p><h2>Let the day unfold slowly.</h2><p>Allow room for rest, reflection, and the small details that make Angkor memorable.</p></div><div className="itinerary"><article><span>Early morning</span><h3>Welcome the dawn</h3><p>Begin quietly and take time to watch the temple emerge with the light.</p></article><article><span>Late morning</span><h3>Walk the galleries</h3><p>Explore at an unhurried pace. Pause to notice the carved stories along the walls.</p></article><article><span>Midday</span><h3>Rest and reset</h3><p>Find shade, drink water, and take a break before returning to the site.</p></article><article><span>Afternoon</span><h3>Follow your curiosity</h3><p>Choose one area to revisit slowly and leave space for a final, quiet view.</p></article></div><div className="guide-bottom"><div><p className="eyebrow">Visit with respect</p><p>Wear clothing that covers shoulders and knees in sacred areas. Speak softly, follow site signs, and never climb or touch fragile carvings.</p></div><div><p className="eyebrow">Bring along</p><ul><li>Water bottle</li><li>Sun protection</li><li>Comfortable walking shoes</li><li>A light cover for sacred spaces</li></ul></div></div></section>
     <section className="about section reveal" id="about"><p className="eyebrow">About C Angkorwat</p><div className="about-grid"><h2>A small tribute to Cambodia’s extraordinary heritage.</h2><p>C Angkorwat celebrates the beauty, history, and enduring cultural meaning of Angkor Wat. This journal invites visitors to look beyond the temple’s famous silhouette and appreciate the Khmer creativity, knowledge, and care that continue to keep its story alive.</p></div></section>
     <section className="contact section reveal" id="contact"><div><p className="eyebrow">Keep in touch</p><h2>Begin a conversation.</h2><p>{content.contact.email || content.contact.phone || content.contact.socialUrl ? 'Connect with C Angkorwat using the details below.' : 'Contact details will be available here soon.'}</p></div>{(content.contact.email || content.contact.phone || content.contact.socialUrl) && <address className="contact-details">{content.contact.email && <div><span>Email</span><a href={`mailto:${content.contact.email}`}>{content.contact.email}</a></div>}{content.contact.phone && <div><span>Phone or WhatsApp</span><a href={`tel:${content.contact.phone}`}>{content.contact.phone}</a></div>}{content.contact.socialUrl && <div><span>Social</span><a href={content.contact.socialUrl}>{content.contact.socialLabel || 'Follow C Angkorwat'}</a></div>}</address>}</section>
-    <footer><a className="brand" href="#home"><TempleMark /><span>C Angkorwat</span></a><p>Celebrating the heritage of Cambodia.</p><p>© 2026 C Angkorwat · <a href="#admin">Admin</a></p></footer>
+    <footer><a className="brand" href="#home"><TempleMark /><span>C Angkorwat</span></a><p>Celebrating the heritage of Cambodia.</p><p>© 2026 C Angkorwat</p></footer>
     {showBackToTop && <button className="back-to-top" type="button" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>↑ <span>Top</span></button>}
     {selectedImage && <div className="lightbox" role="dialog" aria-modal="true" aria-label={selectedImage.title} onClick={() => setSelectedImage(null)}><button className="lightbox-close" type="button" aria-label="Close image viewer" onClick={() => setSelectedImage(null)}>×</button><figure onClick={(event) => event.stopPropagation()}><img src={selectedImage.image} alt={selectedImage.title} /><figcaption><small>{selectedImage.detail}</small>{selectedImage.title}</figcaption></figure></div>}
   </main>

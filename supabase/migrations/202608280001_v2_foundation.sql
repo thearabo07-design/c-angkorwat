@@ -4,8 +4,6 @@ create table if not exists public.site_content (
   updated_at timestamptz not null default now()
 );
 
-alter table public.site_content enable row level security;
-
 do $$ begin
   create type public.app_role as enum ('editor', 'admin', 'super_admin');
 exception
@@ -19,6 +17,7 @@ create table if not exists public.user_roles (
   primary key (user_id, role)
 );
 
+alter table public.site_content enable row level security;
 alter table public.user_roles enable row level security;
 
 create or replace function public.is_admin()

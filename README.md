@@ -1,6 +1,6 @@
-# C Angkorwat V2
+# C Angkorwat V2 foundation
 
-A responsive Cambodian heritage journal with a Supabase-ready content dashboard.
+The working V1 heritage site is preserved while V2 is developed on the local `codex/v2-foundation` branch.
 
 ## Local development
 
@@ -9,23 +9,45 @@ npm install
 npm run dev
 ```
 
-Open the public site at the Vite URL and use `#admin` to open the dashboard. Without Supabase credentials, the dashboard runs in preview mode and does not persist changes.
-
-## Enable the admin backend
-
-1. Create a Supabase project.
-2. In its SQL Editor, run [`supabase/schema.sql`](supabase/schema.sql).
-3. In Authentication → Users, create the administrator account.
-4. Copy `.env.example` to `.env` and add the project URL and public anon key.
-5. Restart the Vite server.
-
-Only authenticated users can publish content. Public visitors can read the published `main` content record. Never place the Supabase service-role key in this frontend project.
-
-For GitHub Pages, add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` as repository Actions variables and expose them to the build step when the backend is ready.
+- Public site: `/c-angkorwat/`
+- Protected admin: `/c-angkorwat/admin`
 
 ## Quality checks
 
 ```bash
 npm run lint
+npm test
 npm run build
 ```
+
+## Configure Supabase
+
+1. Create a separate development Supabase project.
+2. Run `supabase/migrations/202608280001_v2_foundation.sql` in the SQL Editor.
+3. Create the first administrator in Authentication → Users.
+4. Find that user's UUID in Authentication → Users.
+5. In the SQL Editor, assign the role, replacing the example UUID:
+
+```sql
+insert into public.user_roles (user_id, role)
+values ('00000000-0000-0000-0000-000000000000', 'super_admin');
+```
+
+6. Copy `.env.example` to `.env`.
+7. Add only the project URL and browser-safe publishable key.
+8. Restart the development server.
+
+Never put a Supabase secret key or service-role key in this repository or any `VITE_` variable. Vite variables are visible to website visitors.
+
+## Security model
+
+- Public visitors may read published site content.
+- Signing in is not sufficient for CMS access.
+- The database requires an explicit `admin` or `super_admin` role.
+- Row Level Security enforces the same rule for content writes.
+- The admin route remains locked when Supabase is unconfigured.
+- CMS content is schema-validated when loaded and before publishing.
+
+## Deployment status
+
+Phase 2 is local only. Do not merge or push this branch until database policies, login, route hosting, and end-to-end tests have been verified in the development environment.
