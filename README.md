@@ -1,32 +1,31 @@
-# React + TypeScript + Vite
+# C Angkorwat V2
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+A responsive Cambodian heritage journal with a Supabase-ready content dashboard.
 
-Currently, two official plugins are available:
+## Local development
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm install
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Open the public site at the Vite URL and use `#admin` to open the dashboard. Without Supabase credentials, the dashboard runs in preview mode and does not persist changes.
+
+## Enable the admin backend
+
+1. Create a Supabase project.
+2. In its SQL Editor, run [`supabase/schema.sql`](supabase/schema.sql).
+3. In Authentication → Users, create the administrator account.
+4. Copy `.env.example` to `.env` and add the project URL and public anon key.
+5. Restart the Vite server.
+
+Only authenticated users can publish content. Public visitors can read the published `main` content record. Never place the Supabase service-role key in this frontend project.
+
+For GitHub Pages, add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` as repository Actions variables and expose them to the build step when the backend is ready.
+
+## Quality checks
+
+```bash
+npm run lint
+npm run build
+```

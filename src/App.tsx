@@ -1,27 +1,26 @@
 import { useEffect, useState } from 'react'
 import heroImage from './assets/hero.png'
 import sunriseImage from './assets/angkor-sunrise-optimized.jpg'
+import AdminDashboard from './admin/AdminDashboard'
+import { defaultContent, type GalleryItem } from './content'
+import { loadSiteContent } from './lib/supabase'
 import './App.css'
-
-const heritageStories = [
-  { number: '01', title: 'History', text: 'Raised in the early 12th century, Angkor Wat remains a profound expression of Khmer devotion, vision, and craft.' },
-  { number: '02', title: 'Architecture', text: 'Five lotus-bud towers, galleries of stone reliefs, and a vast moat create a temple designed as a sacred universe.' },
-  { number: '03', title: 'Living Culture', text: 'Angkor is more than a monument: it is a place of worship, memory, and enduring Cambodian identity.' },
-]
-
-const gallery = [
-  { title: 'Angkor at first light', detail: 'A temple shaped by dawn', image: sunriseImage, className: 'gallery-temple' },
-  { title: 'Stories in stone', detail: 'Devotion in every detail', image: heroImage, className: 'gallery-carving' },
-  { title: 'Sacred reflections', detail: 'Still water, open sky', image: sunriseImage, className: 'gallery-water' },
-  { title: 'The forest remembers', detail: 'Nature surrounding heritage', image: sunriseImage, className: 'gallery-forest' },
-]
 
 function TempleMark() { return <span className="temple-mark" aria-hidden="true">☼</span> }
 
 function App() {
+  const [isAdmin, setIsAdmin] = useState(window.location.hash === '#admin')
+  const [content, setContent] = useState(defaultContent)
   const [menuOpen, setMenuOpen] = useState(false)
-  const [selectedImage, setSelectedImage] = useState<(typeof gallery)[number] | null>(null)
+  const [selectedImage, setSelectedImage] = useState<(GalleryItem & { image: string }) | null>(null)
   const [showBackToTop, setShowBackToTop] = useState(false)
+
+  useEffect(() => {
+    const route = () => setIsAdmin(window.location.hash === '#admin')
+    window.addEventListener('hashchange', route)
+    loadSiteContent().then((saved) => saved && setContent(saved)).catch(() => undefined)
+    return () => window.removeEventListener('hashchange', route)
+  }, [])
 
   useEffect(() => {
     const showButton = () => setShowBackToTop(window.scrollY > 550)
@@ -30,6 +29,13 @@ function App() {
   }, [])
 
   const closeMenu = () => setMenuOpen(false)
+
+  if (isAdmin) return <AdminDashboard />
+
+  const gallery = content.gallery.map((item, index) => ({
+    ...item,
+    image: item.imageUrl || (index === 1 ? heroImage : sunriseImage),
+  }))
 
   return <main>
     <section className="hero" id="home">
@@ -45,13 +51,13 @@ function App() {
     </section>
     <section className="introduction section reveal" id="history"><p className="eyebrow">A place of wonder</p><div className="intro-grid"><h2>Angkor Wat is a masterpiece made for eternity.</h2><div><p>At the heart of Cambodia’s ancient capital lies its most celebrated temple. Its measured beauty, luminous carvings, and monumental scale have inspired generations of visitors and devotees.</p><a className="text-link" href="#explore">Read the story of Angkor <span aria-hidden="true">→</span></a></div></div></section>
     <section className="meaning section reveal"><div className="meaning-image"><img src={sunriseImage} alt="Sunlight on Angkor Wat" /></div><div><p className="eyebrow">Why Angkor matters</p><h2>Heritage that belongs to the world, and lives in Cambodia.</h2><p>Angkor is a living bridge between past and present. Its temples preserve remarkable Khmer knowledge, artistry, and spiritual traditions—while continuing to inspire the people who care for them today.</p></div></section>
-    <section className="stories section" id="explore"><div className="section-heading reveal"><p className="eyebrow">Three perspectives</p><h2>Discover the soul of Angkor.</h2></div><div className="story-grid">{heritageStories.map((story) => <article className="story-card reveal" key={story.title}><span className="story-number">{story.number}</span><div className="stone-icon" aria-hidden="true">✦</div><h3>{story.title}</h3><p>{story.text}</p><a href="#visit" aria-label={`Learn about Angkor Wat ${story.title}`}>Discover <span aria-hidden="true">→</span></a></article>)}</div></section>
+    <section className="stories section" id="explore"><div className="section-heading reveal"><p className="eyebrow">Three perspectives</p><h2>Discover the soul of Angkor.</h2></div><div className="story-grid">{content.stories.map((story) => <article className="story-card reveal" key={story.title}><span className="story-number">{story.number}</span><div className="stone-icon" aria-hidden="true">✦</div><h3>{story.title}</h3><p>{story.text}</p><a href="#visit" aria-label={`Learn about Angkor Wat ${story.title}`}>Discover <span aria-hidden="true">→</span></a></article>)}</div></section>
     <section className="gallery section" id="gallery"><div className="section-heading gallery-heading reveal"><div><p className="eyebrow">Fragments of Angkor</p><h2>Light, stone, and stillness.</h2></div><p>Select an image to pause, look closer, and discover a quiet fragment of Angkor.</p></div><div className="gallery-grid" aria-label="Angkor Wat visual gallery">{gallery.map((item) => <button className={`gallery-item ${item.className} reveal`} key={item.title} type="button" onClick={() => setSelectedImage(item)} aria-label={`View larger image: ${item.title}`}><img src={item.image} alt={item.title} /><span className="gallery-shade" /><span className="gallery-expand" aria-hidden="true">↗</span><span className="gallery-caption"><small>{item.detail}</small>{item.title}</span></button>)}</div></section>
-    <section className="visit section reveal" id="visit"><div className="visit-copy"><p className="eyebrow">Plan your visit</p><h2>Arrive with wonder.<br />Leave with reverence.</h2><p>Experience Angkor Wat at its most peaceful in the early morning, and allow time to wander with care.</p><a className="button button-dark" href="mailto:hello@cangkorwat.com">Plan your journey <span aria-hidden="true">→</span></a></div><aside className="visit-details" aria-label="Visitor information"><div><span>Temple hours</span><strong>5:00 AM — 6:00 PM</strong></div><div><span>Best time</span><strong>Sunrise &amp; early morning</strong></div><div><span>Visit with care</span><strong>Dress respectfully and honour sacred spaces.</strong></div></aside></section>
+    <section className="visit section reveal" id="visit"><div className="visit-copy"><p className="eyebrow">Plan your visit</p><h2>Arrive with wonder.<br />Leave with reverence.</h2><p>Experience Angkor Wat at its most peaceful in the early morning, and allow time to wander with care.</p><a className="button button-dark" href={content.contact.email ? `mailto:${content.contact.email}` : '#contact'}>Plan your journey <span aria-hidden="true">→</span></a></div><aside className="visit-details" aria-label="Visitor information"><div><span>Temple hours</span><strong>{content.visit.hours}</strong></div><div><span>Best time</span><strong>{content.visit.bestTime}</strong></div><div><span>Visit with care</span><strong>{content.visit.guidance}</strong></div></aside></section>
     <section className="guide section reveal" id="guide"><div className="guide-heading"><p className="eyebrow">A gentle one-day guide</p><h2>Let the day unfold slowly.</h2><p>Allow room for rest, reflection, and the small details that make Angkor memorable.</p></div><div className="itinerary"><article><span>Early morning</span><h3>Welcome the dawn</h3><p>Begin quietly and take time to watch the temple emerge with the light.</p></article><article><span>Late morning</span><h3>Walk the galleries</h3><p>Explore at an unhurried pace. Pause to notice the carved stories along the walls.</p></article><article><span>Midday</span><h3>Rest and reset</h3><p>Find shade, drink water, and take a break before returning to the site.</p></article><article><span>Afternoon</span><h3>Follow your curiosity</h3><p>Choose one area to revisit slowly and leave space for a final, quiet view.</p></article></div><div className="guide-bottom"><div><p className="eyebrow">Visit with respect</p><p>Wear clothing that covers shoulders and knees in sacred areas. Speak softly, follow site signs, and never climb or touch fragile carvings.</p></div><div><p className="eyebrow">Bring along</p><ul><li>Water bottle</li><li>Sun protection</li><li>Comfortable walking shoes</li><li>A light cover for sacred spaces</li></ul></div></div></section>
     <section className="about section reveal" id="about"><p className="eyebrow">About C Angkorwat</p><div className="about-grid"><h2>A small tribute to Cambodia’s extraordinary heritage.</h2><p>C Angkorwat celebrates the beauty, history, and enduring cultural meaning of Angkor Wat. This journal invites visitors to look beyond the temple’s famous silhouette and appreciate the Khmer creativity, knowledge, and care that continue to keep its story alive.</p></div></section>
-    <section className="contact section reveal" id="contact"><div><p className="eyebrow">Keep in touch</p><h2>Begin a conversation.</h2><p>Contact details will be available here soon.</p></div></section>
-    <footer><a className="brand" href="#home"><TempleMark /><span>C Angkorwat</span></a><p>Celebrating the heritage of Cambodia.</p><p>© 2026 C Angkorwat</p></footer>
+    <section className="contact section reveal" id="contact"><div><p className="eyebrow">Keep in touch</p><h2>Begin a conversation.</h2><p>{content.contact.email || content.contact.phone || content.contact.socialUrl ? 'Connect with C Angkorwat using the details below.' : 'Contact details will be available here soon.'}</p></div>{(content.contact.email || content.contact.phone || content.contact.socialUrl) && <address className="contact-details">{content.contact.email && <div><span>Email</span><a href={`mailto:${content.contact.email}`}>{content.contact.email}</a></div>}{content.contact.phone && <div><span>Phone or WhatsApp</span><a href={`tel:${content.contact.phone}`}>{content.contact.phone}</a></div>}{content.contact.socialUrl && <div><span>Social</span><a href={content.contact.socialUrl}>{content.contact.socialLabel || 'Follow C Angkorwat'}</a></div>}</address>}</section>
+    <footer><a className="brand" href="#home"><TempleMark /><span>C Angkorwat</span></a><p>Celebrating the heritage of Cambodia.</p><p>© 2026 C Angkorwat · <a href="#admin">Admin</a></p></footer>
     {showBackToTop && <button className="back-to-top" type="button" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>↑ <span>Top</span></button>}
     {selectedImage && <div className="lightbox" role="dialog" aria-modal="true" aria-label={selectedImage.title} onClick={() => setSelectedImage(null)}><button className="lightbox-close" type="button" aria-label="Close image viewer" onClick={() => setSelectedImage(null)}>×</button><figure onClick={(event) => event.stopPropagation()}><img src={selectedImage.image} alt={selectedImage.title} /><figcaption><small>{selectedImage.detail}</small>{selectedImage.title}</figcaption></figure></div>}
   </main>
