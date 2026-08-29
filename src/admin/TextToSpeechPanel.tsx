@@ -4,9 +4,17 @@ import { requestTextToSpeech, uploadMedia, type SpeechLanguage, type SpeechVoice
 
 const speechLanguages: SpeechLanguage[] = ['en', 'km', 'fr', 'zh-CN']
 const voices: Array<{ value: SpeechVoice; label: string }> = [
-  { value: 'coral', label: 'Coral — warm' },
-  { value: 'nova', label: 'Nova — clear' },
-  { value: 'onyx', label: 'Onyx — deep' },
+  { value: 'alloy', label: 'Alloy' },
+  { value: 'ash', label: 'Ash' },
+  { value: 'ballad', label: 'Ballad' },
+  { value: 'coral', label: 'Coral' },
+  { value: 'echo', label: 'Echo' },
+  { value: 'fable', label: 'Fable' },
+  { value: 'nova', label: 'Nova' },
+  { value: 'onyx', label: 'Onyx' },
+  { value: 'sage', label: 'Sage' },
+  { value: 'shimmer', label: 'Shimmer' },
+  { value: 'verse', label: 'Verse' },
 ]
 
 export default function TextToSpeechPanel({ onCreated }: { onCreated: (audio: { title: string; description: string; audioUrl: string }) => void }) {
@@ -42,7 +50,7 @@ export default function TextToSpeechPanel({ onCreated }: { onCreated: (audio: { 
     </div>
     <label>Audio title<input value={title} maxLength={120} onChange={(event) => setTitle(event.target.value)} /></label>
     <label>Words to speak<textarea lang={language} maxLength={4000} value={script} placeholder="Type or paste the narration here…" onChange={(event) => setScript(event.target.value)} /><small>{script.length} / 4,000 characters</small></label>
-    <div className="tts-footer"><p>This voice is AI-generated. Review pronunciation before publishing.</p><button type="button" disabled={busy || !script.trim()} onClick={generate}>{busy ? 'Generating…' : 'Generate speech'}</button></div>
+    <div className="tts-footer"><p>This voice is AI-generated and may not sound like a native Khmer speaker. Test a short sentence and review pronunciation before publishing.</p><button type="button" disabled={busy || !script.trim()} onClick={generate}>{busy ? 'Generating…' : 'Generate speech'}</button></div>
     {notice && <p className="admin-notice" role="status">{notice}</p>}
   </section>
 }

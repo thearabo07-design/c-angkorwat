@@ -64,7 +64,7 @@ export async function requestAiTranslation(locale: Exclude<Locale, 'en'>, source
 }
 
 export type SpeechLanguage = 'en' | 'km' | 'fr' | 'zh-CN'
-export type SpeechVoice = 'coral' | 'nova' | 'onyx'
+export type SpeechVoice = 'alloy' | 'ash' | 'ballad' | 'coral' | 'echo' | 'fable' | 'nova' | 'onyx' | 'sage' | 'shimmer' | 'verse'
 
 export async function requestTextToSpeech(text: string, language: SpeechLanguage, voice: SpeechVoice) {
   if (!supabase) throw new Error('Supabase is not configured.')
