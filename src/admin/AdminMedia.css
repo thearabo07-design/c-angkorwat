@@ -24,6 +24,7 @@
 .upload-control small { color: #718077; line-height: 1.5; }
 .media-preview { width: 100%; max-height: 240px; object-fit: cover; border: 1px solid #ccd2c9; }
 .media-audio-preview { width: 100%; }
+.media-ready { margin: 0; color: #2a6c41; font-size: 13px; }
 .remove-media { width: max-content; background: #8f3f2c; }
 
 @media (max-width: 800px) {

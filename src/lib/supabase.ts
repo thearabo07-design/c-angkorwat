@@ -26,20 +26,24 @@ export async function saveSiteContent(content: SiteContent) {
 
 const allowedImageTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
 const allowedAudioTypes = new Set(['audio/mpeg', 'audio/mp4', 'audio/wav', 'audio/ogg', 'audio/webm'])
+const allowedModelTypes = new Set(['model/gltf-binary', 'model/vnd.usdz+zip', 'application/octet-stream'])
 
-export async function uploadMedia(file: File, kind: 'image' | 'audio') {
+export async function uploadMedia(file: File, kind: 'image' | 'audio' | 'model') {
   if (!supabase) throw new Error('Supabase is not configured.')
-  const allowedTypes = kind === 'image' ? allowedImageTypes : allowedAudioTypes
+  const allowedTypes = kind === 'image' ? allowedImageTypes : kind === 'audio' ? allowedAudioTypes : allowedModelTypes
   const maxBytes = kind === 'image' ? 10 * 1024 * 1024 : 25 * 1024 * 1024
-  if (!allowedTypes.has(file.type)) throw new Error(`Choose a supported ${kind} file.`)
-  if (file.size > maxBytes) throw new Error(`${kind === 'image' ? 'Images' : 'Audio files'} must be smaller than ${kind === 'image' ? '10' : '25'} MB.`)
+  const extension = file.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || ''
+  const validModelExtension = kind === 'model' && ['glb', 'usdz'].includes(extension)
+  if (!allowedTypes.has(file.type) && !validModelExtension) throw new Error(`Choose a supported ${kind} file.`)
+  if (file.size > maxBytes) throw new Error(`${kind === 'image' ? 'Images' : kind === 'audio' ? 'Audio files' : '3D models'} must be smaller than ${kind === 'image' ? '10' : '25'} MB.`)
 
   const { data: sessionData } = await supabase.auth.getSession()
   const user = sessionData.session?.user
   if (!user) throw new Error('Sign in before uploading media.')
-  const extension = file.name.split('.').pop()?.toLowerCase().replace(/[^a-z0-9]/g, '') || (kind === 'image' ? 'jpg' : 'mp3')
-  const path = `${user.id}/${kind}-${crypto.randomUUID()}.${extension}`
-  const { error } = await supabase.storage.from('media').upload(path, file, { contentType: file.type, upsert: false })
+  const safeExtension = extension || (kind === 'image' ? 'jpg' : kind === 'audio' ? 'mp3' : 'glb')
+  const contentType = file.type || (safeExtension === 'usdz' ? 'model/vnd.usdz+zip' : 'model/gltf-binary')
+  const path = `${user.id}/${kind}-${crypto.randomUUID()}.${safeExtension}`
+  const { error } = await supabase.storage.from('media').upload(path, file, { contentType, upsert: false })
   if (error) throw error
   return supabase.storage.from('media').getPublicUrl(path).data.publicUrl
 }

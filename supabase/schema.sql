@@ -75,7 +75,7 @@ values (
   'media',
   true,
   26214400,
-  array['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'audio/mpeg', 'audio/mp4', 'audio/wav', 'audio/ogg', 'audio/webm']
+  array['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'audio/mpeg', 'audio/mp4', 'audio/wav', 'audio/ogg', 'audio/webm', 'model/gltf-binary', 'model/vnd.usdz+zip', 'application/octet-stream']
 )
 on conflict (id) do update set
   public = excluded.public,
