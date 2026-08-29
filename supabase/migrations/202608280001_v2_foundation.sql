@@ -20,6 +20,10 @@ create table if not exists public.user_roles (
 alter table public.site_content enable row level security;
 alter table public.user_roles enable row level security;
 
+grant select on table public.site_content to anon, authenticated;
+grant insert, update on table public.site_content to authenticated;
+grant select on table public.user_roles to authenticated;
+
 create or replace function public.is_admin()
 returns boolean
 language sql
