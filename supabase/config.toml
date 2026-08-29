@@ -1,2 +1,5 @@
 [functions.translate-content]
 verify_jwt = true
+
+[functions.generate-speech]
+verify_jwt = true

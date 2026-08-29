@@ -63,6 +63,20 @@ export async function requestAiTranslation(locale: Exclude<Locale, 'en'>, source
   return parsed.data
 }
 
+export type SpeechLanguage = 'en' | 'km' | 'fr' | 'zh-CN'
+export type SpeechVoice = 'coral' | 'nova' | 'onyx'
+
+export async function requestTextToSpeech(text: string, language: SpeechLanguage, voice: SpeechVoice) {
+  if (!supabase) throw new Error('Supabase is not configured.')
+  const { data, error } = await supabase.functions.invoke('generate-speech', { body: { text, language, voice } })
+  if (error) throw error
+  if (!data?.audio || data.media_type !== 'audio/mpeg') throw new Error('The speech service returned invalid audio.')
+  const binary = atob(data.audio as string)
+  const bytes = new Uint8Array(binary.length)
+  for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index)
+  return new File([bytes], `ai-speech-${Date.now()}.mp3`, { type: 'audio/mpeg' })
+}
+
 const allowedImageTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
 const allowedAudioTypes = new Set(['audio/mpeg', 'audio/mp4', 'audio/wav', 'audio/ogg', 'audio/webm'])
 const allowedModelTypes = new Set(['model/gltf-binary', 'model/vnd.usdz+zip', 'application/octet-stream'])
