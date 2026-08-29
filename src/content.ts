@@ -2,10 +2,12 @@ import { z } from 'zod'
 
 export type Story = { number: string; title: string; text: string }
 export type GalleryItem = { title: string; detail: string; imageUrl: string; className: string }
+export type AudioItem = { title: string; description: string; audioUrl: string }
 
 export type SiteContent = {
   stories: Story[]
   gallery: GalleryItem[]
+  audio: AudioItem[]
   visit: { hours: string; bestTime: string; guidance: string }
   contact: { email: string; phone: string; socialLabel: string; socialUrl: string }
 }
@@ -22,6 +24,7 @@ export const defaultContent: SiteContent = {
     { title: 'Sacred reflections', detail: 'Still water, open sky', imageUrl: '', className: 'gallery-water' },
     { title: 'The forest remembers', detail: 'Nature surrounding heritage', imageUrl: '', className: 'gallery-forest' },
   ],
+  audio: [],
   visit: {
     hours: '5:00 AM — 6:00 PM',
     bestTime: 'Sunrise & early morning',
@@ -36,6 +39,7 @@ const optionalUrl = z.union([z.literal(''), z.url().refine((value) => value.star
 export const siteContentSchema: z.ZodType<SiteContent> = z.object({
   stories: z.array(z.object({ number: z.string().max(10), title: text, text })).min(1).max(50),
   gallery: z.array(z.object({ title: text, detail: text, imageUrl: optionalUrl, className: z.string().max(80) })).max(100),
+  audio: z.array(z.object({ title: text, description: z.string().trim().max(5000), audioUrl: optionalUrl })).max(50).default([]),
   visit: z.object({ hours: text, bestTime: text, guidance: text }),
   contact: z.object({
     email: z.union([z.literal(''), z.email()]),

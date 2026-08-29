@@ -1,0 +1,27 @@
+.audio-stories {
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.audio-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+  margin-top: 50px;
+}
+
+.audio-card {
+  padding: 30px;
+  background: #e9dcc5;
+  border: 1px solid var(--line);
+}
+
+.audio-card > span { color: var(--clay); font: 11px var(--mono); }
+.audio-card h3 { margin-top: 24px; font-size: 30px; }
+.audio-card p { margin-top: 12px; color: var(--muted); line-height: 1.7; }
+.audio-card audio { width: 100%; margin-top: 24px; accent-color: var(--gold); }
+
+@media (max-width: 720px) {
+  .audio-grid { grid-template-columns: 1fr; margin-top: 34px; }
+  .audio-card { padding: 22px; }
+}
