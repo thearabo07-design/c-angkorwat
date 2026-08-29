@@ -39,6 +39,7 @@ Deno.serve(async (request) => {
     })
     if (!speechResponse.ok) {
       const problem = await speechResponse.json().catch(() => null)
+      console.error('OpenAI speech request failed', speechResponse.status, problem?.error?.code || problem?.error?.type || 'unknown')
       return json({ error: problem?.error?.message || 'OpenAI speech generation failed.' }, speechResponse.status)
     }
     const bytes = new Uint8Array(await speechResponse.arrayBuffer())

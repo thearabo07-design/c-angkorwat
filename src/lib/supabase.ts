@@ -69,7 +69,19 @@ export type SpeechVoice = 'coral' | 'nova' | 'onyx'
 export async function requestTextToSpeech(text: string, language: SpeechLanguage, voice: SpeechVoice) {
   if (!supabase) throw new Error('Supabase is not configured.')
   const { data, error } = await supabase.functions.invoke('generate-speech', { body: { text, language, voice } })
-  if (error) throw error
+  if (error) {
+    let message = error.message
+    const context = 'context' in error ? error.context : null
+    if (context instanceof Response) {
+      try {
+        const body = await context.clone().json()
+        if (typeof body?.error === 'string') message = body.error
+      } catch {
+        // Preserve the client error if the function did not return JSON.
+      }
+    }
+    throw new Error(message)
+  }
   if (!data?.audio || data.media_type !== 'audio/mpeg') throw new Error('The speech service returned invalid audio.')
   const binary = atob(data.audio as string)
   const bytes = new Uint8Array(binary.length)
