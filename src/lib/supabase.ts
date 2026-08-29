@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { siteContentSchema, type SiteContent } from '../content'
+import type { Locale, TranslationRecord, TranslationStatus } from '../i18n'
 
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined
 const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined
@@ -7,9 +8,12 @@ const publishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string |
 export const isSupabaseConfigured = Boolean(url && publishableKey)
 export const supabase = isSupabaseConfigured ? createClient(url!, publishableKey!) : null
 
-export async function loadSiteContent(): Promise<SiteContent | null> {
+export async function loadSiteContent(locale: Locale = 'en'): Promise<SiteContent | null> {
   if (!supabase) return null
-  const { data, error } = await supabase.from('site_content').select('content').eq('id', 'main').maybeSingle()
+  const query = locale === 'en'
+    ? supabase.from('site_content').select('content').eq('id', 'main')
+    : supabase.from('site_translations').select('content').eq('locale', locale).eq('status', 'published')
+  const { data, error } = await query.maybeSingle()
   if (error) throw error
   if (!data?.content) return null
   const parsed = siteContentSchema.safeParse(data.content)
@@ -22,6 +26,41 @@ export async function saveSiteContent(content: SiteContent) {
   const validated = siteContentSchema.parse(content)
   const { error } = await supabase.from('site_content').upsert({ id: 'main', content: validated, updated_at: new Date().toISOString() })
   if (error) throw error
+  await supabase.from('site_translations').update({ status: 'stale', updated_at: new Date().toISOString() }).neq('status', 'stale')
+}
+
+export async function loadTranslation(locale: Exclude<Locale, 'en'>): Promise<TranslationRecord | null> {
+  if (!supabase) return null
+  const { data, error } = await supabase.from('site_translations').select('*').eq('locale', locale).maybeSingle()
+  if (error) throw error
+  if (!data) return null
+  const parsed = siteContentSchema.safeParse(data.content)
+  if (!parsed.success) throw new Error('Translation has an invalid structure.')
+  return { ...data, content: parsed.data } as TranslationRecord
+}
+
+export async function saveTranslation(locale: Exclude<Locale, 'en'>, content: SiteContent, status: TranslationStatus) {
+  if (!supabase) throw new Error('Supabase is not configured.')
+  const { data: userData } = await supabase.auth.getUser()
+  const now = new Date().toISOString()
+  const { error } = await supabase.from('site_translations').upsert({
+    locale,
+    content: siteContentSchema.parse(content),
+    status,
+    updated_at: now,
+    reviewed_at: status === 'reviewed' || status === 'published' ? now : null,
+    reviewer: status === 'reviewed' || status === 'published' ? userData.user?.id ?? null : null,
+  })
+  if (error) throw error
+}
+
+export async function requestAiTranslation(locale: Exclude<Locale, 'en'>, sourceContent: SiteContent) {
+  if (!supabase) throw new Error('Supabase is not configured.')
+  const { data, error } = await supabase.functions.invoke('translate-content', { body: { source_language: 'en', target_language: locale, source_content: sourceContent } })
+  if (error) throw error
+  const parsed = siteContentSchema.safeParse(data?.content)
+  if (!parsed.success) throw new Error('The AI returned an invalid translation.')
+  return parsed.data
 }
 
 const allowedImageTypes = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])

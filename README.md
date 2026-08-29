@@ -50,4 +50,16 @@ Never put a Supabase secret key or service-role key in this repository or any `V
 
 ## Deployment status
 
-Phase 2 is local only. Do not merge or push this branch until database policies, login, route hosting, and end-to-end tests have been verified in the development environment.
+The public site and CMS deploy through GitHub Pages.
+
+## AI translation setup
+
+The translation studio supports English source content with Khmer, French, and Simplified Chinese targets. AI output is always saved as a draft and cannot be published until an administrator marks it reviewed.
+
+1. Apply `supabase/migrations/202608290004_ai_translations.sql`.
+2. Set the Edge Function secret with `supabase secrets set OPENAI_API_KEY=...`.
+3. Optionally set `OPENAI_MODEL`; the function defaults to `gpt-5.4-mini`.
+4. Deploy with `supabase functions deploy translate-content`.
+5. Open CMS → Translations, create an AI draft, review it, mark it reviewed, then publish it.
+
+Never add `OPENAI_API_KEY` to `.env`, a `VITE_` variable, GitHub Pages, client code, or the database. The key belongs only in Supabase Edge Function secrets.

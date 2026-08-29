@@ -3,6 +3,7 @@ import heroImage from './assets/hero.png'
 import sunriseImage from './assets/angkor-sunrise-optimized.jpg'
 import { defaultContent, type GalleryItem } from './content'
 import { loadSiteContent } from './lib/supabase'
+import { getInitialLocale, localeNames, locales, uiCopy, type Locale } from './i18n'
 import './App.css'
 import './Audio.css'
 import './Models.css'
@@ -26,13 +27,30 @@ function ModelViewer({ src, iosSrc, poster, alt }: { src: string; iosSrc: string
 
 function App() {
   const [content, setContent] = useState(defaultContent)
+  const [locale, setLocale] = useState<Locale>(getInitialLocale)
+  const [languageNotice, setLanguageNotice] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
   const [selectedImage, setSelectedImage] = useState<(GalleryItem & { image: string }) | null>(null)
   const [showBackToTop, setShowBackToTop] = useState(false)
 
   useEffect(() => {
-    loadSiteContent().then((saved) => saved && setContent(saved)).catch(() => undefined)
-  }, [])
+    let active = true
+    loadSiteContent(locale).then((saved) => {
+      if (!active) return
+      if (saved) setContent(saved)
+      else {
+        setLanguageNotice('This translation is not published yet. Showing English.')
+        void loadSiteContent('en').then((english) => active && english && setContent(english))
+      }
+    }).catch(() => {
+      if (!active) return
+      setLanguageNotice('Could not load this language. Showing English.')
+      void loadSiteContent('en').then((english) => active && english && setContent(english))
+    })
+    localStorage.setItem('c-angkorwat-locale', locale)
+    document.documentElement.lang = locale
+    return () => { active = false }
+  }, [locale])
 
   useEffect(() => {
     const showButton = () => setShowBackToTop(window.scrollY > 550)
@@ -48,6 +66,7 @@ function App() {
   }))
   const publishedAudio = content.audio.filter((item) => item.audioUrl)
   const publishedModels = content.models.filter((item) => item.modelUrl)
+  const labels = uiCopy[locale]
 
   useEffect(() => {
     if (publishedModels.length > 0) void import('@google/model-viewer')
@@ -60,8 +79,9 @@ function App() {
       <header className="site-header">
         <a className="brand" href="#home" aria-label="C Angkorwat home"><TempleMark /><span>C Angkorwat</span></a>
         <button className="menu-button" type="button" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-controls="main-navigation"><span /><span /><span /><span className="sr-only">Open menu</span></button>
-        <nav id="main-navigation" className={menuOpen ? 'open' : ''} aria-label="Main navigation"><a onClick={closeMenu} href="#home">Home</a><a onClick={closeMenu} href="#history">History</a><a onClick={closeMenu} href="#explore">Explore</a><a onClick={closeMenu} href="#gallery">Gallery</a>{publishedModels.length > 0 && <a onClick={closeMenu} href="#models">3D & AR</a>}{publishedAudio.length > 0 && <a onClick={closeMenu} href="#audio">Listen</a>}<a onClick={closeMenu} href="#visit">Visit</a><a onClick={closeMenu} href="#guide">Guide</a><a onClick={closeMenu} href="#contact">Contact</a></nav>
+        <nav id="main-navigation" className={menuOpen ? 'open' : ''} aria-label="Main navigation"><a onClick={closeMenu} href="#home">{labels.home}</a><a onClick={closeMenu} href="#history">{labels.history}</a><a onClick={closeMenu} href="#explore">{labels.explore}</a><a onClick={closeMenu} href="#gallery">{labels.gallery}</a>{publishedModels.length > 0 && <a onClick={closeMenu} href="#models">{labels.models}</a>}{publishedAudio.length > 0 && <a onClick={closeMenu} href="#audio">{labels.listen}</a>}<a onClick={closeMenu} href="#visit">{labels.visit}</a><a onClick={closeMenu} href="#guide">{labels.guide}</a><a onClick={closeMenu} href="#contact">{labels.contact}</a><label className="language-picker"><span className="sr-only">{labels.language}</span><select aria-label={labels.language} value={locale} onChange={(event) => { setLanguageNotice(''); setLocale(event.target.value as Locale); closeMenu() }}>{locales.map((item) => <option key={item} value={item}>{localeNames[item]}</option>)}</select></label></nav>
       </header>
+      {languageNotice && <p className="language-notice" role="status">{languageNotice}</p>}
       <div className="hero-content reveal"><p className="eyebrow">A Khmer heritage journal</p><h1>Where stone<br />holds memory.</h1><p className="hero-copy">Enter the world of Angkor Wat—an enduring wonder shaped by faith, artistry, and the spirit of Cambodia.</p><a className="button button-gold" href="#explore">Explore the heritage <span aria-hidden="true">↘</span></a></div>
       <a className="scroll-cue" href="#history">Scroll to discover <span aria-hidden="true">↓</span></a>
     </section>
