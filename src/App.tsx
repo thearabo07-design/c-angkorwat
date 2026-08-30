@@ -61,6 +61,8 @@ export function ModelViewer({ src, iosSrc, poster, alt }: { src: string; iosSrc:
     'ar-modes': 'webxr scene-viewer quick-look',
     'camera-controls': true,
     'auto-rotate': autoRotate ? '' : undefined,
+    'auto-rotate-delay': '0',
+    'rotation-per-second': '20deg',
     'touch-action': 'pan-y',
     'shadow-intensity': '1',
     loading: 'lazy',

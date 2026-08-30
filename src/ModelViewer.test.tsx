@@ -59,6 +59,8 @@ describe('model auto-rotation', () => {
     expect(toggle.getAttribute('aria-pressed')).toBe('false')
     fireEvent.click(toggle)
     expect(model.hasAttribute('auto-rotate')).toBe(true)
+    expect(model.getAttribute('auto-rotate-delay')).toBe('0')
+    expect(model.getAttribute('rotation-per-second')).toBe('20deg')
     expect(toggle.textContent).toContain('ON')
     expect(toggle.getAttribute('aria-pressed')).toBe('true')
     fireEvent.click(toggle)
