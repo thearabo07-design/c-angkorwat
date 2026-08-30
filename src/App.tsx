@@ -12,7 +12,7 @@ import './Models.css'
 function TempleMark() { return <span className="temple-mark" aria-hidden="true">☼</span> }
 
 export function ModelViewer({ src, iosSrc, poster, alt }: { src: string; iosSrc: string; poster: string; alt: string }) {
-  const [autoRotate, setAutoRotate] = useState(false)
+  const [autoRotate, setAutoRotate] = useState(true)
   const panelRef = useRef<HTMLElement>(null)
   const [fullscreen, setFullscreen] = useState(false)
   const [expanded, setExpanded] = useState(false)

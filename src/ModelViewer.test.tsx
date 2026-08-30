@@ -26,7 +26,7 @@ describe('model auto-rotation', () => {
     element.mockReturnValue(null)
     fireEvent(document, new Event('fullscreenchange'))
     expect(screen.getByRole('button', { name: 'Full screen' })).toBeTruthy()
-    expect(container.querySelector('model-viewer')!.hasAttribute('auto-rotate')).toBe(true)
+    expect(container.querySelector('model-viewer')!.hasAttribute('auto-rotate')).toBe(false)
   })
 
   it('uses the mobile dialog when a fullscreen request is rejected', async () => {
@@ -39,7 +39,6 @@ describe('model auto-rotation', () => {
   })
   it('supports unavailable fullscreen, rotation, cancel, and scroll restoration', () => {
     render(<ModelViewer {...props} />)
-    fireEvent.click(screen.getByRole('button', { name: 'Auto-rotate' }))
     fireEvent.click(screen.getByRole('button', { name: 'Full screen' }))
     const dialog = screen.getByRole('dialog')
     expect(document.body.style.overflow).toBe('hidden')
@@ -51,13 +50,10 @@ describe('model auto-rotation', () => {
     expect(document.body.style.overflow).toBe('')
     expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Full screen' }))
   })
-  it('starts off and toggles without disabling camera or AR controls', () => {
+  it('starts on and toggles without disabling camera or AR controls', () => {
     const { container } = render(<ModelViewer {...props} />)
     const model = container.querySelector('model-viewer')!
     const toggle = screen.getByRole('button', { name: 'Auto-rotate' })
-    expect(model.hasAttribute('auto-rotate')).toBe(false)
-    expect(toggle.getAttribute('aria-pressed')).toBe('false')
-    fireEvent.click(toggle)
     expect(model.hasAttribute('auto-rotate')).toBe(true)
     expect(model.getAttribute('auto-rotate-delay')).toBe('0')
     expect(model.getAttribute('rotation-per-second')).toBe('20deg')
@@ -66,6 +62,10 @@ describe('model auto-rotation', () => {
     fireEvent.click(toggle)
     expect(model.hasAttribute('auto-rotate')).toBe(false)
     expect(toggle.textContent).toContain('OFF')
+    expect(toggle.getAttribute('aria-pressed')).toBe('false')
+    fireEvent.click(toggle)
+    expect(model.hasAttribute('auto-rotate')).toBe(true)
+    expect(toggle.getAttribute('aria-pressed')).toBe('true')
     expect(model.hasAttribute('camera-controls')).toBe(true)
     expect(model.hasAttribute('ar')).toBe(true)
   })
@@ -74,7 +74,7 @@ describe('model auto-rotation', () => {
     const { container } = render(<><ModelViewer {...props} /><ModelViewer {...props} /></>)
     fireEvent.click(screen.getAllByRole('button', { name: 'Auto-rotate' })[0])
     const models = container.querySelectorAll('model-viewer')
-    expect(models[0].hasAttribute('auto-rotate')).toBe(true)
-    expect(models[1].hasAttribute('auto-rotate')).toBe(false)
+    expect(models[0].hasAttribute('auto-rotate')).toBe(false)
+    expect(models[1].hasAttribute('auto-rotate')).toBe(true)
   })
 })
