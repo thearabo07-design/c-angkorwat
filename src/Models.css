@@ -1,4 +1,8 @@
 .models { border-top: 1px solid var(--line); }
+.model-viewer-panel { position: relative; min-width: 0; padding-bottom: 64px; }
+.model-viewer-panel .model-rotate-toggle { position: absolute; bottom: 10px; left: 16px; min-height: 44px; padding: 10px 18px; border: 1px solid #183428; border-radius: 6px; background: #fff; color: #183428; font: 600 14px/1.4 Arial, sans-serif; cursor: pointer; }
+.model-rotate-toggle[aria-pressed='true'] { background: #183428; color: #fff; }
+.model-rotate-toggle:focus-visible { outline: 3px solid #b9623e; outline-offset: 3px; }
 .model-grid { display: grid; gap: 28px; margin-top: 52px; }
 .model-card { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(260px, .65fr); min-height: 520px; background: #e9dcc5; border: 1px solid var(--line); }
 .model-card model-viewer { width: 100%; height: 100%; min-height: 520px; background: radial-gradient(circle at 50% 35%, #f9f2e5, #d5c4a8); }

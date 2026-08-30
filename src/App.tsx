@@ -10,8 +10,10 @@ import './Models.css'
 
 function TempleMark() { return <span className="temple-mark" aria-hidden="true">☼</span> }
 
-function ModelViewer({ src, iosSrc, poster, alt }: { src: string; iosSrc: string; poster: string; alt: string }) {
-  return createElement('model-viewer', {
+export function ModelViewer({ src, iosSrc, poster, alt }: { src: string; iosSrc: string; poster: string; alt: string }) {
+  const [autoRotate, setAutoRotate] = useState(false)
+  return <section className="model-viewer-panel" aria-label={alt}>
+    {createElement('model-viewer', {
     src,
     alt,
     poster: poster || undefined,
@@ -19,10 +21,15 @@ function ModelViewer({ src, iosSrc, poster, alt }: { src: string; iosSrc: string
     ar: true,
     'ar-modes': 'webxr scene-viewer quick-look',
     'camera-controls': true,
+    'auto-rotate': autoRotate ? '' : undefined,
     'touch-action': 'pan-y',
     'shadow-intensity': '1',
     loading: 'lazy',
-  })
+    })}
+    <button className="model-rotate-toggle" type="button" aria-label="Auto-rotate" aria-pressed={autoRotate} onClick={() => setAutoRotate((enabled) => !enabled)}>
+      Auto-rotate: {autoRotate ? 'ON' : 'OFF'}
+    </button>
+  </section>
 }
 
 function App() {
