@@ -1,4 +1,4 @@
-import { createElement, useEffect, useState } from 'react'
+import { createElement, useEffect, useRef, useState } from 'react'
 import heroImage from './assets/hero.png'
 import sunriseImage from './assets/angkor-sunrise-optimized.jpg'
 import { defaultContent, type GalleryItem } from './content'
@@ -12,7 +12,25 @@ function TempleMark() { return <span className="temple-mark" aria-hidden="true">
 
 export function ModelViewer({ src, iosSrc, poster, alt }: { src: string; iosSrc: string; poster: string; alt: string }) {
   const [autoRotate, setAutoRotate] = useState(false)
-  return <section className="model-viewer-panel" aria-label={alt}>
+  const panelRef = useRef<HTMLElement>(null)
+  const [fullscreen, setFullscreen] = useState(false)
+  const [fullscreenNotice, setFullscreenNotice] = useState('')
+  useEffect(() => {
+    const update = () => setFullscreen(document.fullscreenElement === panelRef.current)
+    document.addEventListener('fullscreenchange', update)
+    return () => document.removeEventListener('fullscreenchange', update)
+  }, [])
+  const toggleFullscreen = async () => {
+    setFullscreenNotice('')
+    try {
+      if (document.fullscreenElement === panelRef.current) await document.exitFullscreen()
+      else if (panelRef.current?.requestFullscreen) await panelRef.current.requestFullscreen()
+      else setFullscreenNotice('Full screen is unavailable in this browser. Try a desktop browser.')
+    } catch {
+      setFullscreenNotice('Could not open full screen. Please try again or use another browser.')
+    }
+  }
+  return <section ref={panelRef} className="model-viewer-panel" aria-label={alt}>
     {createElement('model-viewer', {
     src,
     alt,
@@ -26,9 +44,11 @@ export function ModelViewer({ src, iosSrc, poster, alt }: { src: string; iosSrc:
     'shadow-intensity': '1',
     loading: 'lazy',
     })}
-    <button className="model-rotate-toggle" type="button" aria-label="Auto-rotate" aria-pressed={autoRotate} onClick={() => setAutoRotate((enabled) => !enabled)}>
+    <div className="model-viewer-controls"><button className="model-rotate-toggle" type="button" aria-label="Auto-rotate" aria-pressed={autoRotate} onClick={() => setAutoRotate((enabled) => !enabled)}>
       Auto-rotate: {autoRotate ? 'ON' : 'OFF'}
     </button>
+    <button type="button" onClick={toggleFullscreen}>{fullscreen ? 'Exit full screen' : 'Full screen'}</button></div>
+    {fullscreenNotice && <p className="model-fullscreen-notice" role="status">{fullscreenNotice}</p>}
   </section>
 }
 
