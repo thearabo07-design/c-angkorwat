@@ -1,4 +1,9 @@
 .models { border-top: 1px solid var(--line); }
+.model-fullscreen-dialog { position: fixed; inset: 0; margin: 0; padding: 0; border: 0; width: 100vw; max-width: none; height: 100vh; height: 100dvh; max-height: none; background: #e9dcc5; }
+.model-fullscreen-dialog::backdrop { background: #183428; }
+.model-fullscreen-dialog .model-viewer-panel { height: 100%; }
+.model-fullscreen-dialog model-viewer { width: 100%; flex: 1; min-height: 0; height: 0; background: radial-gradient(circle at 50% 35%, #f9f2e5, #d5c4a8); }
+.model-fullscreen-dialog .model-viewer-controls { padding-bottom: max(10px, env(safe-area-inset-bottom)); }
 .model-viewer-panel { position: relative; min-width: 0; display: flex; flex-direction: column; }
 .model-viewer-controls { display: flex; flex-wrap: wrap; gap: 10px; padding: 10px 16px; background: #e9dcc5; flex-shrink: 0; }
 .model-viewer-controls button { min-height: 44px; padding: 10px 18px; border: 1px solid #183428; border-radius: 6px; background: #fff; color: #183428; font: 600 14px/1.4 Arial, sans-serif; cursor: pointer; }

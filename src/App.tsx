@@ -1,4 +1,5 @@
 import { createElement, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import heroImage from './assets/hero.png'
 import sunriseImage from './assets/angkor-sunrise-optimized.jpg'
 import { defaultContent, type GalleryItem } from './content'
@@ -14,7 +15,25 @@ export function ModelViewer({ src, iosSrc, poster, alt }: { src: string; iosSrc:
   const [autoRotate, setAutoRotate] = useState(false)
   const panelRef = useRef<HTMLElement>(null)
   const [fullscreen, setFullscreen] = useState(false)
+  const [expanded, setExpanded] = useState(false)
+  const dialogRef = useRef<HTMLDialogElement>(null)
+  const fullscreenButton = useRef<HTMLButtonElement>(null)
+  const wasExpanded = useRef(false)
   const [fullscreenNotice, setFullscreenNotice] = useState('')
+  useEffect(() => {
+    if (!expanded) {
+      if (wasExpanded.current) fullscreenButton.current?.focus()
+      wasExpanded.current = false
+      return
+    }
+    wasExpanded.current = true
+    const dialog = dialogRef.current
+    dialog?.showModal()
+    fullscreenButton.current?.focus()
+    const overflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { dialog?.close(); document.body.style.overflow = overflow }
+  }, [expanded])
   useEffect(() => {
     const update = () => setFullscreen(document.fullscreenElement === panelRef.current)
     document.addEventListener('fullscreenchange', update)
@@ -22,15 +41,17 @@ export function ModelViewer({ src, iosSrc, poster, alt }: { src: string; iosSrc:
   }, [])
   const toggleFullscreen = async () => {
     setFullscreenNotice('')
+    if (expanded) { setExpanded(false); return }
     try {
       if (document.fullscreenElement === panelRef.current) await document.exitFullscreen()
       else if (panelRef.current?.requestFullscreen) await panelRef.current.requestFullscreen()
-      else setFullscreenNotice('Full screen is unavailable in this browser. Try a desktop browser.')
+      else setExpanded(true)
     } catch {
-      setFullscreenNotice('Could not open full screen. Please try again or use another browser.')
+      if (!document.fullscreenElement) setExpanded(true)
+      else setFullscreenNotice('Please use your browser’s exit fullscreen control.')
     }
   }
-  return <section ref={panelRef} className="model-viewer-panel" aria-label={alt}>
+  const viewer = <section ref={panelRef} className="model-viewer-panel" aria-label={alt}>
     {createElement('model-viewer', {
     src,
     alt,
@@ -47,9 +68,10 @@ export function ModelViewer({ src, iosSrc, poster, alt }: { src: string; iosSrc:
     <div className="model-viewer-controls"><button className="model-rotate-toggle" type="button" aria-label="Auto-rotate" aria-pressed={autoRotate} onClick={() => setAutoRotate((enabled) => !enabled)}>
       Auto-rotate: {autoRotate ? 'ON' : 'OFF'}
     </button>
-    <button type="button" onClick={toggleFullscreen}>{fullscreen ? 'Exit full screen' : 'Full screen'}</button></div>
+    <button ref={fullscreenButton} type="button" onClick={toggleFullscreen}>{fullscreen || expanded ? 'Exit full screen' : 'Full screen'}</button></div>
     {fullscreenNotice && <p className="model-fullscreen-notice" role="status">{fullscreenNotice}</p>}
   </section>
+  return expanded ? createPortal(<dialog ref={dialogRef} className="model-fullscreen-dialog" aria-label={alt} onCancel={(event) => { event.preventDefault(); setExpanded(false) }} onClose={() => setExpanded(false)}>{viewer}</dialog>, document.body) : viewer
 }
 
 function App() {
